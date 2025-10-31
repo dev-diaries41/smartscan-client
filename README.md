@@ -13,7 +13,7 @@ It provides simple client interfaces for the **Text Embedder** and **Image Embed
 
 The **SmartScan Client** depends only on and re-exports the **`smartscan-sdk core`** module.
 
-This provides users with the **minimal core non-ML functionality** (indexing, search, embedding-utils and more) used in the SmartScan app, while allowing access to the ML inference`` capabilities via the **AIDL services** and the SmartScan app.
+This provides users with the **minimal core non-ML functionality** (indexing, search, embedding-utils and more) used in the SmartScan app, while allowing access to the ML inference capabilities via the **AIDL services** and the SmartScan app.
 
 For details, see the [smartscan-sdk](https://github.com/dev-diaries41/smartscan-sdk).
 
@@ -129,7 +129,6 @@ interface IImageEmbedderService {
 }
 ```
 
-Using these interfaces, apps can bind to the SmartScan services (`com.fpf.smartscan.intent.TEXT_EMBED` and `com.fpf.smartscan.intent.IMAGE_EMBED`) and handle embedding operations directly without the `SmartScan Client` library. You will also need to add the relevant permissions and queries to your manifest if you do not use the library. See the libraries manifest to see how.
-
+Using these interfaces, apps can bind to the SmartScan services (`com.fpf.smartscan.intent.TEXT_EMBED` and `com.fpf.smartscan.intent.IMAGE_EMBED`) and handle embedding operations directly without the `SmartScan Client` library. You will also need to add the necessary permissions and <queries> entries to your Android manifest if bypassing the library; refer to the library’s manifest for the required configuration.
 ---
 
