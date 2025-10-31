@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.os.IBinder
 import android.util.Log
 import com.fpf.smartscan.IImageEmbedderService
+import com.fpf.smartscansdk.core.data.ImageEmbeddingProvider
 import com.fpf.smartscansdk.core.embeddings.unflattenEmbeddings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,7 @@ import java.io.ByteArrayOutputStream
 
 class ImageEmbedderClient(
     private val context: Context
-){
+): ImageEmbeddingProvider{
     companion object {
         private const val APP_PACKAGE_NAME = "com.fpf.smartscan"
         private const val INTENT_ACTION_NAME = "com.fpf.smartscan.intent.IMAGE_EMBED"
@@ -52,7 +53,7 @@ class ImageEmbedderClient(
         mTextEmbedderService?.embed(data) ?: throw EmbedderClientException.embeddingError()
     }
 
-    suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.IO) {
+    override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.IO) {
         if (!_isConnected.value) throw EmbedderClientException.connectionError()
         val byteArray = bitmapToByteArray(data)
         mTextEmbedderService?.embed(byteArray) ?: throw EmbedderClientException.embeddingError()
@@ -61,6 +62,14 @@ class ImageEmbedderClient(
     suspend fun embedBatch( data: List<ByteArray>): List<FloatArray> = withContext(Dispatchers.IO) {
         if (!_isConnected.value) throw EmbedderClientException.connectionError()
         val encoded = encodeByteArrayPayload(data, mTextEmbedderService!!.delimiter)
+        val embeddings = mTextEmbedderService?.embedBatch(encoded)
+            ?: throw EmbedderClientException.embeddingError()
+        unflattenEmbeddings(embeddings, mTextEmbedderService!!.embeddingDim)
+    }
+
+    override suspend fun embedBatch( data: List<Bitmap>): List<FloatArray> = withContext(Dispatchers.IO) {
+        if (!_isConnected.value) throw EmbedderClientException.connectionError()
+        val encoded = encodeByteArrayPayload(data.map{bitmapToByteArray(it)}, mTextEmbedderService!!.delimiter)
         val embeddings = mTextEmbedderService?.embedBatch(encoded)
             ?: throw EmbedderClientException.embeddingError()
         unflattenEmbeddings(embeddings, mTextEmbedderService!!.embeddingDim)
