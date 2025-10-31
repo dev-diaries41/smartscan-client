@@ -48,23 +48,10 @@ class ImageEmbedderClient(
         isBound = context.applicationContext.bindService(intent, mIndexServiceConnection, Context.BIND_AUTO_CREATE)
     }
 
-    suspend fun embed(data: ByteArray): FloatArray = withContext(Dispatchers.IO) {
-        if (!_isConnected.value) throw EmbedderClientException.connectionError()
-        mTextEmbedderService?.embed(data) ?: throw EmbedderClientException.embeddingError()
-    }
-
     override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.IO) {
         if (!_isConnected.value) throw EmbedderClientException.connectionError()
         val byteArray = bitmapToByteArray(data)
         mTextEmbedderService?.embed(byteArray) ?: throw EmbedderClientException.embeddingError()
-    }
-
-    suspend fun embedBatch( data: List<ByteArray>): List<FloatArray> = withContext(Dispatchers.IO) {
-        if (!_isConnected.value) throw EmbedderClientException.connectionError()
-        val encoded = encodeByteArrayPayload(data, mTextEmbedderService!!.delimiter)
-        val embeddings = mTextEmbedderService?.embedBatch(encoded)
-            ?: throw EmbedderClientException.embeddingError()
-        unflattenEmbeddings(embeddings, mTextEmbedderService!!.embeddingDim)
     }
 
     override suspend fun embedBatch( data: List<Bitmap>): List<FloatArray> = withContext(Dispatchers.IO) {
