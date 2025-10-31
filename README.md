@@ -130,5 +130,6 @@ interface IImageEmbedderService {
 ```
 
 Using these interfaces, apps can bind to the SmartScan services (`com.fpf.smartscan.intent.TEXT_EMBED` and `com.fpf.smartscan.intent.IMAGE_EMBED`) and handle embedding operations directly without the `SmartScan Client` library. You will also need to add the necessary permissions and <queries> entries to your Android manifest if bypassing the library; refer to the library’s manifest for the required configuration.
+
 ---
 
