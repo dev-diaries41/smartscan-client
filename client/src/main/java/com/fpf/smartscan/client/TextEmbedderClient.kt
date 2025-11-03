@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import com.fpf.smartscan.ITextEmbedderService
-import com.fpf.smartscansdk.core.data.TextEmbeddingProvider
+import com.fpf.smartscansdk.core.embeddings.TextEmbeddingProvider
 import com.fpf.smartscansdk.core.embeddings.unflattenEmbeddings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +30,7 @@ class TextEmbedderClient(
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected
 
+
     private val mIndexServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             Log.d(TAG, "Service has connected successfully")
@@ -41,6 +42,9 @@ class TextEmbedderClient(
             reset()
         }
     }
+
+    override val embeddingDim: Int
+        get() = mTextEmbedderService?.embeddingDim?: throw EmbedderClientException.connectionError()
 
     fun connectService() {
         if (isBound) return
