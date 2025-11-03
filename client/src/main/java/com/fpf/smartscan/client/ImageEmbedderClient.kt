@@ -8,7 +8,7 @@ import android.graphics.Bitmap
 import android.os.IBinder
 import android.util.Log
 import com.fpf.smartscan.IImageEmbedderService
-import com.fpf.smartscansdk.core.data.ImageEmbeddingProvider
+import com.fpf.smartscansdk.core.embeddings.ImageEmbeddingProvider
 import com.fpf.smartscansdk.core.embeddings.unflattenEmbeddings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,6 +41,10 @@ class ImageEmbedderClient(
             reset()
         }
     }
+
+    override val embeddingDim: Int
+        get() = mTextEmbedderService?.embeddingDim?: throw EmbedderClientException.connectionError()
+
 
     fun connectService() {
         if (isBound) return
