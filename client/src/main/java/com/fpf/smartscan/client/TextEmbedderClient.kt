@@ -65,6 +65,25 @@ class TextEmbedderClient(
             unflattenEmbeddings(embeddings, mTextEmbedderService!!.embeddingDim)
         }
 
+    override suspend fun initialize() {
+        // service handles internally
+    }
+
+    override fun isInitialized(): Boolean {
+        // service handles actual initialisation internally
+        return mTextEmbedderService != null
+    }
+
+    fun listModels(): List<String> {
+        if (!_isConnected.value) throw EmbedderClientException.connectionError()
+        return mTextEmbedderService!!.listModels()
+    }
+
+    fun selectModel(model: String): Boolean{
+        if (!_isConnected.value) throw EmbedderClientException.connectionError()
+        return mTextEmbedderService!!.selectModel(model)
+    }
+
     fun disconnectService(){
         if (isBound){
             context.applicationContext.unbindService(mIndexServiceConnection)
