@@ -25,7 +25,7 @@ class ImageEmbedderClient(
         const val TAG = "ImageEmbedderClient"
     }
 
-    private var mTextEmbedderService: IImageEmbedderService? = null
+    private var mImageEmbedderService: IImageEmbedderService? = null
     private var isBound = false
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected
@@ -33,7 +33,7 @@ class ImageEmbedderClient(
     private val mIndexServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
             Log.d(TAG, "Service has connected successfully")
-            mTextEmbedderService = IImageEmbedderService.Stub.asInterface(service)
+            mImageEmbedderService = IImageEmbedderService.Stub.asInterface(service)
             _isConnected.value = true
         }
         override fun onServiceDisconnected(name: ComponentName) {
@@ -43,7 +43,7 @@ class ImageEmbedderClient(
     }
 
     override val embeddingDim: Int
-        get() = mTextEmbedderService?.embeddingDim?: throw EmbedderClientException.connectionError()
+        get() = mImageEmbedderService?.embeddingDim?: throw EmbedderClientException.connectionError()
 
 
     fun connectService() {
@@ -55,16 +55,37 @@ class ImageEmbedderClient(
     override suspend fun embed(data: Bitmap): FloatArray = withContext(Dispatchers.IO) {
         if (!_isConnected.value) throw EmbedderClientException.connectionError()
         val byteArray = bitmapToByteArray(data)
-        mTextEmbedderService?.embed(byteArray) ?: throw EmbedderClientException.embeddingError()
+        mImageEmbedderService?.embed(byteArray) ?: throw EmbedderClientException.embeddingError()
     }
 
     override suspend fun embedBatch( data: List<Bitmap>): List<FloatArray> = withContext(Dispatchers.IO) {
         if (!_isConnected.value) throw EmbedderClientException.connectionError()
-        val encoded = encodeByteArrayPayload(data.map{bitmapToByteArray(it)}, mTextEmbedderService!!.delimiter)
-        val embeddings = mTextEmbedderService?.embedBatch(encoded)
+        val encoded = encodeByteArrayPayload(data.map{bitmapToByteArray(it)}, mImageEmbedderService!!.delimiter)
+        val embeddings = mImageEmbedderService?.embedBatch(encoded)
             ?: throw EmbedderClientException.embeddingError()
-        unflattenEmbeddings(embeddings, mTextEmbedderService!!.embeddingDim)
+        unflattenEmbeddings(embeddings, mImageEmbedderService!!.embeddingDim)
     }
+
+    override suspend fun initialize() {
+        // service handles internally
+    }
+
+    override fun isInitialized(): Boolean {
+        // service handles actual initialisation internally
+        return mImageEmbedderService != null
+    }
+
+
+    fun listModels(): List<String> {
+        if (!_isConnected.value) throw EmbedderClientException.connectionError()
+        return mImageEmbedderService!!.listModels()
+    }
+
+    fun selectModel(model: String): Boolean{
+        if (!_isConnected.value) throw EmbedderClientException.connectionError()
+        return mImageEmbedderService!!.selectModel(model)
+    }
+
 
     fun disconnectService(){
         if (isBound){
@@ -80,7 +101,7 @@ class ImageEmbedderClient(
     }
 
     private fun reset(){
-        mTextEmbedderService = null
+        mImageEmbedderService = null
         isBound = false
         _isConnected.value = false
     }
