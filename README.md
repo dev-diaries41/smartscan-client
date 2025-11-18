@@ -1,4 +1,4 @@
-# SmartScan Client
+# SmartScan Android Client
 
 ## Overview
 
